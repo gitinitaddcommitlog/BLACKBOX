@@ -352,6 +352,8 @@
             gap: 5px;
             cursor: pointer;
             transition: all 0.3s;
+            text-decoration: none;
+            z-index: 10;
         }
         
         .view-3d-badge:hover {
@@ -722,15 +724,15 @@
                 <div class="product-card">
                     <div class="product-image">
                         <img src="https://via.placeholder.com/250x150/2c3e50/ffffff?text=FIBINPUT+Mouse" alt="FIBINPUT Fiber Mouse">
-                        <div class="view-3d-badge" onclick="window.location.href='MODEL/MOUSE/index.html'">
+                        <a href="MODELS/MOUSE/index.html" class="view-3d-badge">
                             <i class="fas fa-cube"></i> View in 3D
-                        </div>
+                        </a>
                     </div>
                     <div class="product-content">
                         <h3>FIBINPUT Fiber Mouse</h3>
                         <p>Precision fiber optic mouse with ergonomic design and customizable RGB lighting.</p>
                         <div class="product-price">
-                            <span class="price">$89.99</span>
+                            <span class="price">₵89.99</span>
                             <button class="btn btn-primary">Add to Cart</button>
                         </div>
                     </div>
@@ -739,12 +741,15 @@
                 <div class="product-card">
                     <div class="product-image">
                         <img src="https://via.placeholder.com/250x150/2c3e50/ffffff?text=Wireless+Keyboard" alt="Wireless Keyboard">
+                        <a href="MODELS/KEYBOARD/index.html" class="view-3d-badge">
+                            <i class="fas fa-cube"></i> View in 3D
+                        </a>
                     </div>
                     <div class="product-content">
                         <h3>Wireless Mechanical Keyboard</h3>
                         <p>Responsive mechanical switches with wireless connectivity and long battery life.</p>
                         <div class="product-price">
-                            <span class="price">$129.99</span>
+                            <span class="price">₵129.99</span>
                             <button class="btn btn-primary">Add to Cart</button>
                         </div>
                     </div>
@@ -753,12 +758,15 @@
                 <div class="product-card">
                     <div class="product-image">
                         <img src="https://via.placeholder.com/250x150/2c3e50/ffffff?text=Security+Camera" alt="Security Camera">
+                        <a href="MODELS/CAMERA/index.html" class="view-3d-badge">
+                            <i class="fas fa-cube"></i> View in 3D
+                        </a>
                     </div>
                     <div class="product-content">
                         <h3>4K Security Camera System</h3>
                         <p>Complete surveillance system with 4K resolution and night vision capabilities.</p>
                         <div class="product-price">
-                            <span class="price">$299.99</span>
+                            <span class="price">₵299.99</span>
                             <button class="btn btn-primary">Add to Cart</button>
                         </div>
                     </div>
@@ -767,12 +775,15 @@
                 <div class="product-card">
                     <div class="product-image">
                         <img src="https://via.placeholder.com/250x150/2c3e50/ffffff?text=Gaming+Headset" alt="Gaming Headset">
+                        <a href="MODELS/HEADSET/index.html" class="view-3d-badge">
+                            <i class="fas fa-cube"></i> View in 3D
+                        </a>
                     </div>
                     <div class="product-content">
                         <h3>7.1 Surround Sound Headset</h3>
                         <p>Immersive gaming headset with noise cancellation and customizable EQ settings.</p>
                         <div class="product-price">
-                            <span class="price">$79.99</span>
+                            <span class="price">₵79.99</span>
                             <button class="btn btn-primary">Add to Cart</button>
                         </div>
                     </div>
@@ -926,7 +937,7 @@
             if(button.textContent.includes('Add to Cart')) {
                 button.addEventListener('click', function() {
                     const productName = this.closest('.product-card').querySelector('h3').textContent;
-                    alert(`${productName} has been added to your cart!`);
+                    alert(`₵{productName} has been added to your cart!`);
                 });
             }
         });
