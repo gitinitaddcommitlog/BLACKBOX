@@ -20,7 +20,6 @@
   scene.background = new THREE.Color(0x071018);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
-  // Start with default camera position - NOT auto-centered
   camera.position.set(5, 5, 5);
 
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -56,7 +55,7 @@
   bottomFill2.castShadow = false;
   scene.add(bottomFill2);
 
-  // UI elements - SET DEFAULTS TO LOWEST
+  // UI elements - Desktop
   const brightnessEl = document.getElementById('brightness');
   const resetLightsBtn = document.getElementById('reset-lights');
   const presetStudio = document.getElementById('preset-studio');
@@ -70,26 +69,83 @@
   const saturationEl = document.getElementById('saturation');
   const saturationLabel = document.getElementById('saturation-label');
 
+  // Mobile UI elements
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileControls = document.getElementById('mobile-controls');
+  const mobileBrightnessEl = document.getElementById('mobile-brightness');
+  const mobileSaturationEl = document.getElementById('mobile-saturation');
+  const mobileResetLightsBtn = document.getElementById('mobile-reset-lights');
+  const mobileRecenterBtn = document.getElementById('mobile-recenter');
+  const mobileFullscreenBtn = document.getElementById('mobile-fullscreen');
+  const mobileScreenshotBtn = document.getElementById('mobile-screenshot');
+  const mobileDownloadBtn = document.getElementById('mobile-download-glb');
+  const mobileBrightnessLabel = document.getElementById('mobile-brightness-label');
+  const mobileSaturationLabel = document.getElementById('mobile-saturation-label');
+  const mobilePresetStudio = document.getElementById('mobile-preset-studio');
+  const mobilePresetProduct = document.getElementById('mobile-preset-product');
+  const mobilePresetDramatic = document.getElementById('mobile-preset-dramatic');
+
   // Set initial values to LOWEST
-  if(brightnessEl) brightnessEl.value = 1;    // Lowest brightness
-  if(saturationEl) saturationEl.value = 0.5;  // Lowest saturation
+  const setInitialValues = () => {
+    if(brightnessEl) brightnessEl.value = 1;
+    if(saturationEl) saturationEl.value = 0.5;
+    if(mobileBrightnessEl) mobileBrightnessEl.value = 1;
+    if(mobileSaturationEl) mobileSaturationEl.value = 0.5;
+  };
 
   let currentModel = null;
 
+  // Mobile menu toggle
+  if(mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenuBtn.classList.toggle('active');
+      mobileControls.classList.toggle('active');
+    });
+  }
+
+  // Close mobile menu when clicking outside
+  if(mobileControls) {
+    mobileControls.addEventListener('click', (e) => {
+      if(e.target === mobileControls) {
+        mobileMenuBtn.classList.remove('active');
+        mobileControls.classList.remove('active');
+      }
+    });
+  }
+
   // Saturation control
   function updateSaturation(){
-    const sat = saturationEl ? parseFloat(saturationEl.value) : 0.5;
+    const sat = saturationEl ? parseFloat(saturationEl.value) : 
+                mobileSaturationEl ? parseFloat(mobileSaturationEl.value) : 0.5;
+    
+    // Sync both sliders
+    if(saturationEl && mobileSaturationEl && saturationEl.value !== mobileSaturationEl.value) {
+      mobileSaturationEl.value = sat;
+    }
+    
     try{ if(canvas) canvas.style.filter = `saturate(${sat})`; }catch(e){}
     if(saturationLabel) saturationLabel.textContent = Math.round(sat * 100) + '%';
+    if(mobileSaturationLabel) mobileSaturationLabel.textContent = Math.round(sat * 100) + '%';
   }
+
+  // Sync slider events
   if(saturationEl) saturationEl.addEventListener('input', updateSaturation);
+  if(mobileSaturationEl) mobileSaturationEl.addEventListener('input', updateSaturation);
 
   function safeValue(el, defaultV){ return el ? parseFloat(el.value) : defaultV; }
 
   // Lighting update
   function updateLighting(){
-    const slider = Math.max(1, safeValue(brightnessEl, 1));
+    const slider = brightnessEl ? parseFloat(brightnessEl.value) :
+                   mobileBrightnessEl ? parseFloat(mobileBrightnessEl.value) : 1;
+
+    // Sync both sliders
+    if(brightnessEl && mobileBrightnessEl && brightnessEl.value !== mobileBrightnessEl.value) {
+      mobileBrightnessEl.value = slider;
+    }
+
     if(brightnessLabel) brightnessLabel.textContent = `${Math.round(slider)}%`;
+    if(mobileBrightnessLabel) mobileBrightnessLabel.textContent = `${Math.round(slider)}%`;
 
     const t = (slider - 1) / 99;
     const POWER = 3.2;
@@ -106,55 +162,70 @@
     bottomFill2.intensity = Math.min(150, Math.max(0.08, renderer.toneMappingExposure * 0.003));
   }
   
+  // Sync brightness events
   if(brightnessEl) brightnessEl.addEventListener('input', updateLighting);
+  if(mobileBrightnessEl) mobileBrightnessEl.addEventListener('input', updateLighting);
   
-  // PRESETS 
-  if(presetStudio) presetStudio.addEventListener('click', ()=>{
-    if(brightnessEl) brightnessEl.value = 30;
-    if(saturationEl) saturationEl.value = 0.8;
-    updateLighting(); updateSaturation();
-  });
-  
-  if(presetProduct) presetProduct.addEventListener('click', ()=>{
-    if(brightnessEl) brightnessEl.value = 80;
-    if(saturationEl) saturationEl.value = 1.2;
-    updateLighting(); updateSaturation();
-  });
-  
-  if(presetDramatic) presetDramatic.addEventListener('click', ()=>{
-    if(brightnessEl) brightnessEl.value = 15;
-    if(saturationEl) saturationEl.value = 1.5;
-    updateLighting(); updateSaturation();
-  });
+  // PRESETS - Desktop and Mobile
+  const applyPreset = (brightness, saturation) => {
+    if(brightnessEl) brightnessEl.value = brightness;
+    if(mobileBrightnessEl) mobileBrightnessEl.value = brightness;
+    if(saturationEl) saturationEl.value = saturation;
+    if(mobileSaturationEl) mobileSaturationEl.value = saturation;
+    updateLighting(); 
+    updateSaturation();
+    
+    // Close mobile menu after preset
+    if(mobileControls) {
+      mobileMenuBtn.classList.remove('active');
+      mobileControls.classList.remove('active');
+    }
+  };
 
-  // Reset lights - back to LOWEST values
-  if(resetLightsBtn) resetLightsBtn.addEventListener('click', ()=> {
-    if(brightnessEl) brightnessEl.value = 1;    // Back to lowest
-    if(saturationEl) saturationEl.value = 0.5;  // Back to lowest
-    updateLighting(); updateSaturation();
-  });
+  if(presetStudio) presetStudio.addEventListener('click', () => applyPreset(30, 0.8));
+  if(presetProduct) presetProduct.addEventListener('click', () => applyPreset(80, 1.2));
+  if(presetDramatic) presetDramatic.addEventListener('click', () => applyPreset(15, 1.5));
+  
+  if(mobilePresetStudio) mobilePresetStudio.addEventListener('click', () => applyPreset(30, 0.8));
+  if(mobilePresetProduct) mobilePresetProduct.addEventListener('click', () => applyPreset(80, 1.2));
+  if(mobilePresetDramatic) mobilePresetDramatic.addEventListener('click', () => applyPreset(15, 1.5));
 
-  // Recenter model - now actually centers the model
-  if(recenterBtn) recenterBtn.addEventListener('click', ()=> {
+  // Reset lights
+  const resetLights = () => {
+    applyPreset(1, 0.5);
+  };
+
+  if(resetLightsBtn) resetLightsBtn.addEventListener('click', resetLights);
+  if(mobileResetLightsBtn) mobileResetLightsBtn.addEventListener('click', resetLights);
+
+  // Recenter model
+  const recenterModel = () => {
     if(currentModel) {
       const box = new THREE.Box3().setFromObject(currentModel);
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       
-      // Center the model at origin
       currentModel.position.set(-center.x, -center.y, -center.z);
       
-      // Reset camera to reasonable distance based on model size
       const maxDim = Math.max(size.x, size.y, size.z);
       const distance = maxDim > 0 ? maxDim * 2 : 10;
       camera.position.set(distance, distance * 0.7, distance);
       camera.lookAt(0, 0, 0);
       controls.update();
+      
+      // Close mobile menu after recenter
+      if(mobileControls) {
+        mobileMenuBtn.classList.remove('active');
+        mobileControls.classList.remove('active');
+      }
     }
-  });
+  };
+
+  if(recenterBtn) recenterBtn.addEventListener('click', recenterModel);
+  if(mobileRecenterBtn) mobileRecenterBtn.addEventListener('click', recenterModel);
 
   // Fullscreen
-  if(fullscreenBtn) fullscreenBtn.addEventListener('click', ()=> {
+  const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       canvas.requestFullscreen().catch(err => {
         console.log(`Fullscreen error: ${err.message}`);
@@ -162,10 +233,13 @@
     } else {
       document.exitFullscreen();
     }
-  });
+  };
+
+  if(fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+  if(mobileFullscreenBtn) mobileFullscreenBtn.addEventListener('click', toggleFullscreen);
 
   // Screenshot
-  if(screenshotBtn) screenshotBtn.addEventListener('click', ()=> {
+  const takeScreenshot = () => {
     renderer.render(scene, camera);
     canvas.toBlob(function(blob) {
       const link = document.createElement('a');
@@ -174,14 +248,20 @@
       link.click();
       URL.revokeObjectURL(link.href);
     });
-  });
+  };
+
+  if(screenshotBtn) screenshotBtn.addEventListener('click', takeScreenshot);
+  if(mobileScreenshotBtn) mobileScreenshotBtn.addEventListener('click', takeScreenshot);
 
   // Download GLB
-  if(downloadBtn) downloadBtn.addEventListener('click', ()=> {
+  const downloadGLB = () => {
     alert('GLB download would be implemented here with proper export logic');
-  });
+  };
 
-  // Model loading - NO AUTO-CENTERING OR AUTO-ZOOMING
+  if(downloadBtn) downloadBtn.addEventListener('click', downloadGLB);
+  if(mobileDownloadBtn) mobileDownloadBtn.addEventListener('click', downloadGLB);
+
+  // Model loading
   function loadModelFromBase64(b64){
     if(!b64){ if(loading) loading.textContent = 'No model provided'; return; }
     try{
@@ -214,7 +294,6 @@
           }
         });
 
-        // JUST ADD THE MODEL TO SCENE - NO AUTO-CENTERING OR ZOOMING
         scene.add(model);
         currentModel = model;
 
@@ -249,7 +328,8 @@
   }
   animate();
 
-  // Initial UI sync with LOWEST values
+  // Initial setup
+  setInitialValues();
   updateLighting();
   updateSaturation();
 })();
